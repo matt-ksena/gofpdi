@@ -6,12 +6,13 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
+
+	"github.com/pkg/errors"
 )
 
 type PdfReader struct {
@@ -1414,8 +1415,20 @@ func (this *PdfReader) rebuildContentStream(content *PdfValue) ([]byte, error) {
 	}
 
 	// Set stream variable to content bytes
-	stream := content.Stream.Bytes
-
+	var stream []byte
+	if content != nil {
+		if content.Stream != nil {
+			if content.Stream.Bytes != nil {
+				stream = content.Stream.Bytes
+			} else {
+				return nil, errors.New("Bytes nil")
+			}
+		} else {
+			return nil, errors.New("Stream nil")
+		}
+	} else {
+		return nil, errors.New("Content nil")
+	}
 	// Loop through filters and apply each filter to stream
 	for i := 0; i < len(filters); i++ {
 		switch filters[i].Token {
